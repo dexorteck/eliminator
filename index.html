@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eliminator - Stop Overthinking, Start Deciding</title>
+  <meta name="description" content="Stop overthinking. Decide fast with fun games: Eliminator, Spin Wheel, Coin Flip, Dice & more. Make decisions in seconds.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Navigation -->
+    <nav id="nav">
+      <button class="nav-btn active" data-view="home">Home</button>
+      <button class="nav-btn" data-view="setup">New Game</button>
+      <button class="nav-btn" data-view="quests">Quests</button>
+      <button class="nav-btn" data-view="stats">Stats</button>
+      <button class="nav-btn" data-view="settings">Settings</button>
+    </nav>
+
+    <!-- Level/XP bar (global) -->
+    <div class="xp-bar-container" id="xpBarContainer">
+      <div class="xp-bar-info">
+        <span>Level <strong id="levelNum">1</strong></span>
+        <span id="xpText">0 / 100 XP</span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+    </div>
+
+    <!-- Home -->
+    <main id="view-home" class="view active">
+      <header class="hero">
+        <h1>Eliminator</h1>
+        <p class="tagline">Stop overthinking. Decide in seconds.</p>
+      </header>
+      <section class="daily-streak" id="dailyStreak"></section>
+      <section class="stats-preview" id="statsPreview"></section>
+      <section class="games-grid" id="gamesGrid"></section>
+    </main>
+
+    <!-- Setup (options input) -->
+    <main id="view-setup" class="view">
+      <header>
+        <h2>Your Options</h2>
+        <p>Type your choices or pick a category</p>
+      </header>
+      <section class="setup-section">
+        <div class="category-tabs">
+          <button class="category-tab active" data-category="custom">Custom</button>
+          <button class="category-tab" data-category="food">Where to eat</button>
+          <button class="category-tab" data-category="watch">What to watch</button>
+          <button class="category-tab" data-category="do">What to do</button>
+          <button class="category-tab" data-category="travel">Where to go</button>
+        </div>
+        <div class="saved-categories" id="savedCategories"></div>
+        <textarea id="optionsInput" rows="6" placeholder="One option per line&#10;e.g. Netflix&#10;Go out with friends&#10;Read a book"></textarea>
+        <div class="setup-actions">
+          <button id="saveCategoryBtn" class="btn-secondary">Save as category</button>
+          <button id="startBtn" class="btn-primary">Pick a game & start</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Game mode selector (modal) -->
+    <div id="gamePicker" class="modal hidden">
+      <div class="modal-content">
+        <h3>Choose your game</h3>
+        <div class="games-picker-grid" id="gamesPickerGrid"></div>
+        <button class="btn-secondary" id="closePicker">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Eliminator game -->
+    <main id="view-eliminator" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">Eliminator</span>
+        <span id="roundInfo"></span>
+      </div>
+      <p class="game-question">Which one do you want to <strong>eliminate</strong>?</p>
+      <div class="options-row">
+        <button class="option-btn" id="optionA"></button>
+        <button class="option-btn" id="optionB"></button>
+      </div>
+    </main>
+
+    <!-- Keeper game -->
+    <main id="view-keeper" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">Keeper</span>
+        <span id="keeperRoundInfo"></span>
+      </div>
+      <p class="game-question">Which one do you want to <strong>keep</strong>?</p>
+      <div class="options-row">
+        <button class="option-btn keeper-btn" id="keeperA"></button>
+        <button class="option-btn keeper-btn" id="keeperB"></button>
+      </div>
+    </main>
+
+    <!-- Spin Wheel game -->
+    <main id="view-wheel" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">Spin Wheel</span>
+      </div>
+      <div class="wheel-container">
+        <canvas id="wheelCanvas"></canvas>
+        <div class="wheel-pointer"></div>
+      </div>
+      <button id="spinBtn" class="btn-primary">Spin!</button>
+    </main>
+
+    <!-- Flip Coin game -->
+    <main id="view-coin" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">Coin Flip</span>
+      </div>
+      <p class="game-question">Heads or Tails?</p>
+      <div class="coin-container">
+        <div id="coin" class="coin">
+          <div class="coin-face coin-heads">A</div>
+          <div class="coin-face coin-tails">B</div>
+        </div>
+      </div>
+      <p class="coin-labels"><span id="coinLabelA"></span> vs <span id="coinLabelB"></span></p>
+      <button id="flipBtn" class="btn-primary">Flip coin</button>
+    </main>
+
+    <!-- Dice game -->
+    <main id="view-dice" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">Dice</span>
+      </div>
+      <p class="game-question">Roll the dice (up to 6 options)</p>
+      <div class="dice-container">
+        <div id="dice" class="dice-3d"></div>
+      </div>
+      <button id="rollBtn" class="btn-primary">Roll dice</button>
+    </main>
+
+    <!-- Random Pick game -->
+    <main id="view-random" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">Random Pick</span>
+      </div>
+      <p class="game-question">Instant decision</p>
+      <div id="randomShuffle" class="random-shuffle">
+        <span id="randomResult"></span>
+      </div>
+      <button id="pickBtn" class="btn-primary">Pick random</button>
+    </main>
+
+    <!-- Blind Shuffle (cards) -->
+    <main id="view-blind" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">Blind Shuffle</span>
+      </div>
+      <p class="game-question">Shuffle and pick a card</p>
+      <div id="blindCards" class="blind-cards"></div>
+      <button id="shuffleBlindBtn" class="btn-secondary">Shuffle</button>
+    </main>
+
+    <!-- Timer Challenge -->
+    <main id="view-timer" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">5 Seconds</span>
+        <span id="timerDisplay">5</span>
+      </div>
+      <p class="game-question">Eliminate before time runs out!</p>
+      <div class="options-row">
+        <button class="option-btn timer-btn" id="timerA"></button>
+        <button class="option-btn timer-btn" id="timerB"></button>
+      </div>
+      <button id="startTimerBtn" class="btn-primary">Start</button>
+    </main>
+
+    <!-- Blind Decision -->
+    <main id="view-blindDecision" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">🙈 Blind Decision</span>
+      </div>
+      <p class="game-question">Commit first. Reveal after. No backing out!</p>
+      <div id="blindDecisionCommit" class="blind-decision-box">
+        <p>I commit to doing whatever is chosen.</p>
+        <button id="blindDecisionCommitBtn" class="btn-primary">I commit — reveal my fate</button>
+      </div>
+      <div id="blindDecisionResult" class="blind-decision-result hidden">
+        <p class="winner-text" id="blindDecisionWinner"></p>
+        <button id="blindDecisionAcceptBtn" class="btn-primary">Accept & done</button>
+      </div>
+    </main>
+
+    <!-- Battle Royale (bracket) -->
+    <main id="view-bracket" class="view game-view">
+      <div class="game-header">
+        <span class="game-badge">Battle Royale</span>
+      </div>
+      <p class="game-question">Which do you prefer? (tournament mode)</p>
+      <div class="options-row">
+        <button class="option-btn bracket-btn" id="bracketA"></button>
+        <button class="option-btn bracket-btn" id="bracketB"></button>
+      </div>
+    </main>
+
+    <!-- Winner screen (shared) -->
+    <main id="view-winner" class="view">
+      <div id="confetti"></div>
+      <div class="winner-content">
+        <p class="winner-motivation" id="winnerMotivation"></p>
+        <p class="winner-label">The winner is:</p>
+        <p id="winnerText" class="winner-text"></p>
+        <p class="winner-mode" id="winnerMode"></p>
+        <div class="winner-actions">
+          <button id="shareBtn" class="btn-secondary">Share</button>
+          <button id="playAgainBtn" class="btn-primary">Play again</button>
+          <button id="newGameBtn" class="btn-secondary">New game</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Quests -->
+    <main id="view-quests" class="view">
+      <header>
+        <h2>Weekly Quests</h2>
+        <p>Complete quests to earn XP. Resets every Monday.</p>
+      </header>
+      <section class="quests-section">
+        <div id="questsList"></div>
+      </section>
+    </main>
+
+    <!-- Stats -->
+    <main id="view-stats" class="view">
+      <header>
+        <h2>Statistics</h2>
+      </header>
+      <section class="stats-section">
+        <div class="stat-cards" id="statCards"></div>
+        <div class="streak-card" id="streakCard"></div>
+        <div class="insights-section" id="insightsSection">
+          <h3>Insights</h3>
+          <div class="insight-chart" id="insightByDay"></div>
+          <div class="insight-chart" id="insightByGame"></div>
+        </div>
+        <div class="achievements" id="achievements"></div>
+        <div class="history-section">
+          <h3>History</h3>
+          <ul id="historyList"></ul>
+        </div>
+      </section>
+    </main>
+
+    <!-- Settings -->
+    <main id="view-settings" class="view">
+      <header>
+        <h2>Settings</h2>
+      </header>
+      <section class="settings-section">
+        <div class="setting-row">
+          <label>Theme</label>
+          <select id="themeSelect"></select>
+        </div>
+        <div class="setting-row">
+          <label>Confetti on win</label>
+          <input type="checkbox" id="confettiToggle" checked>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
