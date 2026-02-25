@@ -151,6 +151,67 @@ body {
   transition: width 0.4s ease;
 }
 
+.xp-preview {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0.5rem 0 0;
+}
+
+/* ===== UNLOCKABLES ===== */
+.unlockables-section {
+  margin-bottom: 1.5rem;
+}
+
+.unlockables-section h3 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.unlockables-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.unlockables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.unlockable-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+}
+
+.unlockable-item.unlocked {
+  border-color: var(--success);
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.unlockable-item.locked {
+  opacity: 0.7;
+}
+
+.unlockable-icon {
+  font-size: 1.25rem;
+}
+
+.unlockable-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.unlockable-level {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 /* ===== SAVED CATEGORIES ===== */
 .saved-categories {
   margin-bottom: 1rem;
@@ -370,6 +431,84 @@ body {
   color: var(--text-muted);
   font-size: 1rem;
   margin-top: 0.25rem;
+}
+
+/* Monster banner */
+.monster-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(255, 107, 74, 0.15), rgba(168, 85, 247, 0.15));
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.monster-emoji {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.monster-text {
+  font-size: 0.95rem;
+  color: var(--text);
+  margin: 0;
+}
+
+/* Quick decide */
+.quick-decide {
+  margin-bottom: 1.5rem;
+}
+
+.quick-decide h3 {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.quick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quick-btn {
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* App footer */
+.app-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.app-footer p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Empty states */
+.empty-hint {
+  color: var(--text-muted) !important;
+  font-style: italic;
 }
 
 /* Daily streak */
@@ -721,6 +860,39 @@ button {
   transform: scale(0.97);
 }
 
+/* Game actions (Undo, Skip) */
+.game-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn-ghost {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-ghost:hover {
+  color: var(--accent);
+}
+
+#undoElimBtn {
+  visibility: hidden;
+}
+
+.keyboard-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
 .option-btn.keeper-btn:hover {
   border-color: var(--success);
   background: rgba(74, 222, 128, 0.1);
@@ -880,6 +1052,29 @@ button {
   flex-wrap: wrap;
   justify-content: center;
   margin: 1.5rem 0;
+  perspective: 1000px;
+}
+
+.blind-cards.blind-shuffling .blind-card {
+  animation: blindShuffle 0.5s ease-out both;
+}
+
+.blind-cards.blind-shuffling .blind-card:nth-child(1) { animation-delay: 0s; }
+.blind-cards.blind-shuffling .blind-card:nth-child(2) { animation-delay: 0.05s; }
+.blind-cards.blind-shuffling .blind-card:nth-child(3) { animation-delay: 0.1s; }
+.blind-cards.blind-shuffling .blind-card:nth-child(4) { animation-delay: 0.15s; }
+.blind-cards.blind-shuffling .blind-card:nth-child(5) { animation-delay: 0.2s; }
+.blind-cards.blind-shuffling .blind-card:nth-child(6) { animation-delay: 0.25s; }
+.blind-cards.blind-shuffling .blind-card:nth-child(7) { animation-delay: 0.3s; }
+.blind-cards.blind-shuffling .blind-card:nth-child(8) { animation-delay: 0.35s; }
+.blind-cards.blind-shuffling .blind-card:nth-child(n+9) { animation-delay: 0.4s; }
+
+@keyframes blindShuffle {
+  0% { transform: translate(0, 0) rotateY(0deg) scale(1); }
+  25% { transform: translate(calc(var(--shuf-x, 0) * 25px), -40px) rotateY(180deg) rotate(calc(var(--shuf-r, 1) * 20deg)) scale(0.95); }
+  50% { transform: translate(calc(var(--shuf-x, 0) * -20px), -20px) rotateY(90deg) rotate(calc(var(--shuf-r, 1) * -15deg)) scale(1.02); }
+  75% { transform: translate(calc(var(--shuf-x, 0) * 10px), -5px) rotateY(180deg) rotate(calc(var(--shuf-r, 1) * 5deg)) scale(1); }
+  100% { transform: translate(0, 0) rotateY(0deg) rotate(0deg) scale(1); }
 }
 
 .blind-card {
@@ -887,6 +1082,7 @@ button {
   height: 110px;
   background: linear-gradient(135deg, #1a365d, #2c5282);
   border-radius: 0.5rem;
+  transform-style: preserve-3d;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -41,15 +41,10 @@ function getWeekKey() {
 
 function getQuestsForWeek() {
   const week = getWeekKey();
-  const seeds = [week, week + 'a', week + 'b'].map(s => {
-    let h = 0;
-    for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
-    return Math.abs(h);
-  });
   return [
-    { id: 'q1', desc: 'Make 5 decisions', target: 5, type: 'decisions', progress: 0, xp: 50 },
-    { id: 'q2', desc: 'Use 3 different games', target: 3, type: 'games', progress: 0, xp: 50 },
-    { id: 'q3', desc: 'Get a 2+ day streak', target: 1, type: 'streak', progress: 0, xp: 75 }
+    { id: 'q1', desc: 'Make 5 decisions (annoy the Monster)', target: 5, type: 'decisions', progress: 0, xp: 50 },
+    { id: 'q2', desc: 'Try 3 different games', target: 3, type: 'games', progress: 0, xp: 50 },
+    { id: 'q3', desc: 'Streak 2+ days (Monster hates consistency)', target: 1, type: 'streak', progress: 0, xp: 75 }
   ];
 }
 
@@ -59,19 +54,50 @@ const CATEGORIES = {
   food: ['Pizza', 'Sushi', 'Hamburger', 'Tacos', 'Pasta', 'Salad', 'Ramen', 'BBQ'],
   watch: ['Netflix', 'YouTube', 'Movie theater', 'Documentary', 'TV show', 'Stand-up comedy'],
   do: ['Work out', 'Read', 'Sleep', 'Walk', 'Gaming', 'Drawing', 'Cooking', 'Meditation'],
-  travel: ['Beach', 'Mountains', 'City', 'Countryside', 'Museum', 'Park', 'Café']
+  travel: ['Beach', 'Mountains', 'City', 'Countryside', 'Museum', 'Park', 'Café'],
+  weekend: ['Brunch', 'Hike', 'Sleep in', 'Clean', 'Side project', 'Call family', 'Road trip']
 };
 
-// ===== ENCOURAGING MESSAGES =====
+// ===== PERSONALITY & HUMOR =====
 const WIN_MESSAGES = [
-  "Decision made! 🎯",
-  "No more overthinking! ✨",
-  "That was easy. 👏",
-  "You're a natural decider!",
-  "One less thing to worry about.",
-  "Done! Go enjoy it. 🚀",
-  "Your future self thanks you."
+  "Overthinking Monster: defeated. 🎯",
+  "That took 12 seconds. Your record. 👏",
+  "Decision made. Now actually do it. ✨",
+  "One less thing to overthink. You're welcome.",
+  "Done. The Monster is crying in a corner.",
+  "Your future self just high-fived you. 🚀",
+  "Boom. Decided. Living your best life.",
+  "The Monster didn't see that coming.",
+  "Analysis paralysis: avoided. Legend."
 ];
+
+const MONSTER_MESSAGES = [
+  "The Overthinking Monster hates when you decide fast. Let's annoy it.",
+  "Every decision weakens the Monster. Keep going.",
+  "The Monster is shaking. It thought you'd never pick.",
+  "You're doing great. The Monster is getting nervous.",
+  "One more decision and the Monster might just leave.",
+  "The Monster can't believe you're still deciding. Good."
+];
+
+const QUICK_DECISIONS = [
+  { label: "Yes or No?", options: ["Yes", "No"] },
+  { label: "Pizza or Sushi?", options: ["Pizza", "Sushi"] },
+  { label: "Netflix or Go out?", options: ["Netflix", "Go out"] },
+  { label: "Coffee or Tea?", options: ["Coffee", "Tea"] },
+  { label: "Nap or Exercise?", options: ["Nap", "Exercise"] },
+  { label: "Cook or Order?", options: ["Cook", "Order"] },
+  { label: "Early or Night owl?", options: ["Early bird", "Night owl"] },
+  { label: "Save or Spend?", options: ["Save", "Spend"] },
+  { label: "Text or Call?", options: ["Text", "Call"] }
+];
+
+const FUNNY_TOASTS = {
+  saved: ["Saved! The Monster can't steal it now.", "List saved. You're basically organized now.", "Saved. Future you says thanks."],
+  quest: ["Quest done! The Monster is furious.", "Nice. The Monster didn't expect that.", "Another quest crushed. Legend."],
+  firstTime: "First decision! The Monster didn't stand a chance. 🎉",
+  levelUp: "Level up! The Monster is packing its bags. 🎉"
+};
 
 // ===== STATE =====
 let state = {
@@ -159,7 +185,7 @@ function addXP(amount, reason) {
   state.xp += amount;
   const prevLevel = getLevel(state.xp - amount);
   const newLevel = getLevel(state.xp);
-  if (newLevel > prevLevel) toast(`Level up! You're now level ${newLevel}! 🎉`);
+  if (newLevel > prevLevel) toast(`Level ${newLevel}! ` + FUNNY_TOASTS.levelUp);
   updateXPBar();
 }
 
@@ -187,12 +213,20 @@ function updateXPBar() {
   const bar = document.getElementById('xpFill');
   const levelEl = document.getElementById('levelNum');
   const xpText = document.getElementById('xpText');
+  const previewEl = document.getElementById('xpPreview');
   if (!bar) return;
-  levelEl.textContent = getLevel(state.xp);
+  const lvl = getLevel(state.xp);
+  levelEl.textContent = lvl;
   const { current, needed } = getXPProgress();
   const pct = Math.min(100, (current / needed) * 100);
   bar.style.width = pct + '%';
   xpText.textContent = `${state.xp} XP`;
+  const nextTheme = THEMES.find(t => t.level > lvl);
+  if (previewEl) {
+    previewEl.textContent = nextTheme
+      ? `Next: ${nextTheme.name} at Lv.${nextTheme.level}`
+      : 'All themes unlocked!';
+  }
 }
 
 // ===== STREAK =====
@@ -283,7 +317,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     if (view === 'home') renderHome();
     if (view === 'quests') renderQuests();
     if (view === 'setup') renderSavedCategories();
-    if (view === 'settings') renderThemeSelect();
+    if (view === 'settings') { renderThemeSelect(); renderUnlockables(); }
   });
 });
 
@@ -303,7 +337,7 @@ document.getElementById('startBtn').addEventListener('click', () => {
   const input = document.getElementById('optionsInput').value.trim();
   state.options = input.split('\n').map(o => o.trim()).filter(o => o);
   if (state.options.length < 2) {
-    toast('You need at least 2 options!', true);
+    toast('Need at least 2 options. The Monster is not impressed.', true);
     return;
   }
   state.options = [...new Set(state.options)];
@@ -363,12 +397,17 @@ function initGame(gameId) {
 
 // ===== ELIMINATOR =====
 let elimOptions = [];
+let lastEliminated = null;
+
 function initEliminator() {
   elimOptions = [...state.options];
+  lastEliminated = null;
   showEliminatorPair();
 }
 
 function showEliminatorPair() {
+  const undoBtn = document.getElementById('undoElimBtn');
+  if (undoBtn) undoBtn.style.visibility = lastEliminated ? 'visible' : 'hidden';
   if (elimOptions.length === 1) {
     endGame(elimOptions[0]);
     return;
@@ -386,26 +425,35 @@ function showEliminatorPair() {
   btnB.classList.remove('eliminated');
 }
 
-document.getElementById('optionA')?.addEventListener('click', () => {
-  const v = document.getElementById('optionA').dataset.value;
-  if (!v) return;
-  document.getElementById('optionA').classList.add('eliminated');
+document.getElementById('undoElimBtn')?.addEventListener('click', () => {
+  if (lastEliminated) {
+    elimOptions.push(lastEliminated);
+    lastEliminated = null;
+    state.stats.optionsEliminated--;
+    showEliminatorPair();
+    toast('Undone. Monster is confused.');
+  }
+});
+
+document.getElementById('skipElimBtn')?.addEventListener('click', () => {
+  showEliminatorPair();
+  toast('New pair. Still can\'t decide? Press Skip again.');
+});
+
+function eliminateOption(v) {
+  const btn = v === document.getElementById('optionA').dataset.value ? document.getElementById('optionA') : document.getElementById('optionB');
+  if (!v || !btn) return;
+  lastEliminated = v;
+  btn.classList.add('eliminated');
   setTimeout(() => {
     elimOptions = elimOptions.filter(o => o !== v);
     state.stats.optionsEliminated++;
     showEliminatorPair();
   }, 400);
-});
-document.getElementById('optionB')?.addEventListener('click', () => {
-  const v = document.getElementById('optionB').dataset.value;
-  if (!v) return;
-  document.getElementById('optionB').classList.add('eliminated');
-  setTimeout(() => {
-    elimOptions = elimOptions.filter(o => o !== v);
-    state.stats.optionsEliminated++;
-    showEliminatorPair();
-  }, 400);
-});
+}
+
+document.getElementById('optionA')?.addEventListener('click', () => eliminateOption(document.getElementById('optionA').dataset.value));
+document.getElementById('optionB')?.addEventListener('click', () => eliminateOption(document.getElementById('optionB').dataset.value));
 
 // ===== KEEPER =====
 let keeperOptions = [];
@@ -439,6 +487,11 @@ document.getElementById('keeperB')?.addEventListener('click', () => {
   const keep = document.getElementById('keeperB').dataset.value;
   keeperOptions = [keep];
   showKeeperPair();
+});
+
+document.getElementById('skipKeeperBtn')?.addEventListener('click', () => {
+  showKeeperPair();
+  toast('New pair. Take your time.');
 });
 
 // ===== WHEEL =====
@@ -594,25 +647,40 @@ function initBlind() {
 document.getElementById('shuffleBlindBtn')?.addEventListener('click', () => {
   const container = document.getElementById('blindCards');
   const cards = [...container.querySelectorAll('.blind-card')];
-  cards.forEach(c => {
+  cards.forEach((c, i) => {
     c.classList.remove('revealed');
     c.textContent = '?';
+    c.style.setProperty('--shuf-x', (i % 3) - 1);
+    c.style.setProperty('--shuf-r', i % 2 === 0 ? 1 : -1);
   });
-  const shuffled = [...state.options].sort(() => Math.random() - 0.5);
-  container.innerHTML = '';
-  shuffled.forEach((opt, i) => {
-    const card = document.createElement('div');
-    card.className = 'blind-card';
-    card.dataset.value = opt;
-    card.textContent = '?';
-    card.addEventListener('click', () => {
-      card.classList.add('revealed');
-      card.textContent = opt;
-      setTimeout(() => endGame(opt), 300);
+  container.classList.add('blind-shuffling');
+  const shuffled = fisherYatesShuffle([...state.options]);
+  setTimeout(() => {
+    container.classList.remove('blind-shuffling');
+    container.innerHTML = '';
+    shuffled.forEach((opt) => {
+      const card = document.createElement('div');
+      card.className = 'blind-card';
+      card.dataset.value = opt;
+      card.textContent = '?';
+      card.addEventListener('click', () => {
+        card.classList.add('revealed');
+        card.textContent = opt;
+        setTimeout(() => endGame(opt), 300);
+      });
+      container.appendChild(card);
     });
-    container.appendChild(card);
-  });
+  }, 500);
 });
+
+function fisherYatesShuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // ===== TIMER =====
 let timerOptions = [];
@@ -771,6 +839,7 @@ function endGame(winner) {
   document.getElementById('winnerText').textContent = winner;
   document.getElementById('winnerMode').textContent = GAMES.find(g => g.id === state.currentGame)?.name || '';
   document.getElementById('winnerMotivation').textContent = WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)];
+  if (state.stats.decisions === 1) toast(FUNNY_TOASTS.firstTime);
   fireConfetti();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   getView('winner').classList.add('active');
@@ -778,16 +847,16 @@ function endGame(winner) {
 
 // ===== ACHIEVEMENTS =====
 const ACHIEVEMENTS = [
-  { id: 'first', name: 'First Decision', icon: '🎉', check: () => state.stats.decisions >= 1 },
-  { id: 'ten', name: '10 Decisions', icon: '🔥', check: () => state.stats.decisions >= 10 },
-  { id: 'fifty', name: '50 Decisions', icon: '⭐', check: () => state.stats.decisions >= 50 },
+  { id: 'first', name: 'First Blood', icon: '🎉', check: () => state.stats.decisions >= 1 },
+  { id: 'ten', name: 'Monster Slayer', icon: '🔥', check: () => state.stats.decisions >= 10 },
+  { id: 'fifty', name: 'Decision Machine', icon: '⭐', check: () => state.stats.decisions >= 50 },
   { id: 'variety', name: 'Explorer', icon: '🌍', check: () => {
     const modes = new Set(state.history.slice(0, 20).map(h => h.mode));
     return modes.size >= 5;
   }},
-  { id: 'eliminator', name: 'Eliminator Pro', icon: '🗑️', check: () => state.stats.optionsEliminated >= 20 },
-  { id: 'streak3', name: '3-Day Streak', icon: '📅', check: () => state.streak >= 3 },
-  { id: 'streak7', name: 'Week Warrior', icon: '💪', check: () => state.streak >= 7 }
+  { id: 'eliminator', name: 'Elimination Master', icon: '🗑️', check: () => state.stats.optionsEliminated >= 20 },
+  { id: 'streak3', name: 'On Fire', icon: '📅', check: () => state.streak >= 3 },
+  { id: 'streak7', name: 'Unstoppable', icon: '💪', check: () => state.streak >= 7 }
 ];
 
 function checkAchievements() {
@@ -806,14 +875,14 @@ function updateQuests() {
     if (q.type === 'decisions') {
       const count = state.history.filter(h => new Date(h.date) >= weekStart).length;
       q.progress = Math.min(count, q.target);
-      if (q.progress >= q.target) { q.completed = true; addXP(q.xp); toast(`Quest complete! +${q.xp} XP`); }
+      if (q.progress >= q.target) { q.completed = true; addXP(q.xp); toast(FUNNY_TOASTS.quest[Math.floor(Math.random() * FUNNY_TOASTS.quest.length)] + ` +${q.xp} XP`); return; }
     } else if (q.type === 'games') {
       const count = state.stats.gamesUsedThisWeek?.size || 0;
       q.progress = Math.min(count, q.target);
-      if (q.progress >= q.target) { q.completed = true; addXP(q.xp); toast(`Quest complete! +${q.xp} XP`); }
+      if (q.progress >= q.target) { q.completed = true; addXP(q.xp); toast(FUNNY_TOASTS.quest[Math.floor(Math.random() * FUNNY_TOASTS.quest.length)] + ` +${q.xp} XP`); return; }
     } else if (q.type === 'streak') {
       q.progress = state.streak >= 2 ? 1 : 0;
-      if (q.progress >= q.target) { q.completed = true; addXP(q.xp); toast(`Quest complete! +${q.xp} XP`); }
+      if (q.progress >= q.target) { q.completed = true; addXP(q.xp); toast(FUNNY_TOASTS.quest[Math.floor(Math.random() * FUNNY_TOASTS.quest.length)] + ` +${q.xp} XP`); return; }
     }
   });
   saveState();
@@ -821,14 +890,14 @@ function updateQuests() {
 
 // ===== SHARE =====
 document.getElementById('shareBtn')?.addEventListener('click', () => {
-  const text = `I just decided: ${document.getElementById('winnerText').textContent}! 🎯 Try Eliminator - stop overthinking`;
+  const text = `I just decided: ${document.getElementById('winnerText').textContent}! 🙈 Try Eliminator - beats overthinking every time`;
   if (navigator.share) {
     navigator.share({
       title: 'Eliminator',
       text
     }).catch(() => {});
   }
-  navigator.clipboard?.writeText(text).then(() => toast('Copied to clipboard!'));
+  navigator.clipboard?.writeText(text).then(() => toast('Copied. Go annoy your friends.'));
 });
 
 document.getElementById('playAgainBtn')?.addEventListener('click', () => {
@@ -872,7 +941,7 @@ document.getElementById('saveCategoryBtn')?.addEventListener('click', () => {
   const input = document.getElementById('optionsInput').value.trim();
   const opts = input.split('\n').map(o => o.trim()).filter(o => o);
   if (opts.length < 2) {
-    toast('Need at least 2 options to save!', true);
+    toast('2+ options needed. Even the Monster knows that.', true);
     return;
   }
   const name = prompt('Category name:', 'My list');
@@ -881,7 +950,7 @@ document.getElementById('saveCategoryBtn')?.addEventListener('click', () => {
   state.savedCategories.push({ name: name.trim(), options: opts });
   saveState();
   renderSavedCategories();
-  toast('Saved!');
+  toast(FUNNY_TOASTS.saved[Math.floor(Math.random() * FUNNY_TOASTS.saved.length)]);
 });
 
 // ===== QUESTS RENDER =====
@@ -936,7 +1005,7 @@ function renderInsights() {
           <div class="chart-bar-h"><div style="width: ${(count / maxGame) * 100}%"></div></div>
           <span>${count}</span>
         </div>
-      `).join('') || '<p>No data yet</p>'}
+      `).join('') || '<p class="empty-hint">No data yet. Decisions = insights. Go decide something.</p>'}
     </div>
   `;
 }
@@ -946,8 +1015,30 @@ function renderThemeSelect() {
   const sel = document.getElementById('themeSelect');
   if (!sel) return;
   const level = getLevel(state.xp);
-  sel.innerHTML = THEMES.filter(t => level >= t.level).map(t => `
+  const opts = ['<option value="system"' + (state.settings.theme === 'system' ? ' selected' : '') + '>System (auto)</option>'];
+  opts.push(...THEMES.filter(t => level >= t.level).map(t => `
     <option value="${t.id}" ${state.settings.theme === t.id ? 'selected' : ''}>${t.name}${t.level > 1 ? ' (Lv.' + t.level + ')' : ''}</option>
+  `));
+  sel.innerHTML = opts.join('');
+}
+
+function applyTheme(themeId) {
+  const effective = themeId === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : themeId;
+  document.documentElement.dataset.theme = effective;
+}
+
+function renderUnlockables() {
+  const el = document.getElementById('unlockablesList');
+  if (!el) return;
+  const lvl = getLevel(state.xp);
+  el.innerHTML = THEMES.map(t => `
+    <div class="unlockable-item ${lvl >= t.level ? 'unlocked' : 'locked'}">
+      <span class="unlockable-icon">${lvl >= t.level ? '✓' : '🔒'}</span>
+      <span class="unlockable-name">${t.name}</span>
+      <span class="unlockable-level">Lv.${t.level}${t.level === 0 ? ' (free)' : ''}</span>
+    </div>
   `).join('');
 }
 
@@ -956,8 +1047,11 @@ function initThemeSelect() {
   if (!sel) return;
   sel.addEventListener('change', (e) => {
     state.settings.theme = e.target.value;
-    document.documentElement.dataset.theme = e.target.value;
+    applyTheme(e.target.value);
     saveState();
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (state.settings.theme === 'system') applyTheme('system');
   });
 }
 
@@ -989,20 +1083,39 @@ function renderStats() {
     <li>
       <span><strong>${h.winner}</strong><span class="mode">${GAMES.find(g => g.id === h.mode)?.name || h.mode}</span></span>
     </li>
-  `).join('') || '<li>No decisions yet</li>';
+  `).join('') || '<li class="empty-hint">No decisions yet. The Monster is winning. Do something about it.</li>';
 }
 
 // ===== HOME =====
 function renderHome() {
+  const monsterText = document.getElementById('monsterText');
+  if (monsterText) {
+    const idx = Math.min(Math.floor(state.stats.decisions / 5), MONSTER_MESSAGES.length - 1);
+    monsterText.textContent = MONSTER_MESSAGES[idx];
+  }
+  const quickEl = document.getElementById('quickButtons');
+  if (quickEl) {
+    quickEl.innerHTML = QUICK_DECISIONS.map((q, i) => `
+      <button class="quick-btn" data-idx="${i}">${q.label}</button>
+    `).join('');
+    quickEl.querySelectorAll('.quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const q = QUICK_DECISIONS[parseInt(btn.dataset.idx)];
+        state.options = q.options;
+        document.getElementById('gamePicker').classList.remove('hidden');
+        renderGamePicker();
+      });
+    });
+  }
   const streakEl = document.getElementById('dailyStreak');
   streakEl.innerHTML = state.streak > 0 ? `
     <div class="streak-banner">
       <span class="streak-icon">🔥</span>
-      <span><strong>${state.streak}</strong> day streak — decide today to keep it going!</span>
+      <span><strong>${state.streak}</strong> day streak — decide today to keep the Monster crying!</span>
     </div>
   ` : state.stats.decisions > 0 ? `
     <div class="streak-banner streak-call">
-      <span>Start a streak — make a decision today!</span>
+      <span>Start a streak — annoy the Monster daily!</span>
     </div>
   ` : '';
   document.getElementById('statsPreview').innerHTML = `
@@ -1032,9 +1145,30 @@ document.getElementById('confettiToggle').addEventListener('change', (e) => {
   saveState();
 });
 
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', (e) => {
+  if (e.key !== '1' && e.key !== '2') return;
+  const activeView = document.querySelector('.view.active');
+  if (!activeView) return;
+  const viewId = activeView.id;
+  if (viewId === 'view-eliminator') {
+    const btn = e.key === '1' ? document.getElementById('optionA') : document.getElementById('optionB');
+    if (btn?.dataset.value && !btn.classList.contains('eliminated')) eliminateOption(btn.dataset.value);
+  } else if (viewId === 'view-keeper') {
+    const btn = e.key === '1' ? document.getElementById('keeperA') : document.getElementById('keeperB');
+    if (btn?.dataset.value) btn.click();
+  } else if (viewId === 'view-bracket') {
+    const btn = e.key === '1' ? document.getElementById('bracketA') : document.getElementById('bracketB');
+    if (btn?.dataset.value) btn.click();
+  } else if (viewId === 'view-timer') {
+    const btn = e.key === '1' ? document.getElementById('timerA') : document.getElementById('timerB');
+    if (btn?.dataset.value && document.getElementById('startTimerBtn')?.style.display === 'none') btn.click();
+  }
+});
+
 // ===== INIT =====
 loadState();
-document.documentElement.dataset.theme = state.settings.theme;
+applyTheme(state.settings.theme || 'dark');
 updateXPBar();
 renderThemeSelect();
 initThemeSelect();

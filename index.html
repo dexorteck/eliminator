@@ -28,6 +28,7 @@
         <span id="xpText">0 / 100 XP</span>
       </div>
       <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+      <p class="xp-preview" id="xpPreview">Next: Light theme at Lv.1</p>
     </div>
 
     <!-- Home -->
@@ -35,17 +36,28 @@
       <header class="hero">
         <h1>Eliminator</h1>
         <p class="tagline">Stop overthinking. Decide in seconds.</p>
+        <div class="monster-banner" id="monsterBanner">
+          <span class="monster-emoji">👾</span>
+          <p class="monster-text" id="monsterText">The Overthinking Monster hates when you decide fast. Let's annoy it.</p>
+        </div>
       </header>
+      <section class="quick-decide" id="quickDecide">
+        <h3>Quick decide</h3>
+        <div class="quick-buttons" id="quickButtons"></div>
+      </section>
       <section class="daily-streak" id="dailyStreak"></section>
       <section class="stats-preview" id="statsPreview"></section>
       <section class="games-grid" id="gamesGrid"></section>
+      <footer class="app-footer">
+        <p>Made for people who spend 20 mins choosing a movie. You're welcome. 🍿</p>
+      </footer>
     </main>
 
     <!-- Setup (options input) -->
     <main id="view-setup" class="view">
       <header>
-        <h2>Your Options</h2>
-        <p>Type your choices or pick a category</p>
+        <h2>What's the dilemma?</h2>
+        <p>Type your options or pick a category. The Monster is watching.</p>
       </header>
       <section class="setup-section">
         <div class="category-tabs">
@@ -54,9 +66,10 @@
           <button class="category-tab" data-category="watch">What to watch</button>
           <button class="category-tab" data-category="do">What to do</button>
           <button class="category-tab" data-category="travel">Where to go</button>
+          <button class="category-tab" data-category="weekend">Weekend</button>
         </div>
         <div class="saved-categories" id="savedCategories"></div>
-        <textarea id="optionsInput" rows="6" placeholder="One option per line&#10;e.g. Netflix&#10;Go out with friends&#10;Read a book"></textarea>
+        <textarea id="optionsInput" rows="6" placeholder="One option per line (you know the drill)&#10;e.g. Netflix&#10;Go out with friends&#10;Read a book&#10;Cry in a corner"></textarea>
         <div class="setup-actions">
           <button id="saveCategoryBtn" class="btn-secondary">Save as category</button>
           <button id="startBtn" class="btn-primary">Pick a game & start</button>
@@ -67,7 +80,7 @@
     <!-- Game mode selector (modal) -->
     <div id="gamePicker" class="modal hidden">
       <div class="modal-content">
-        <h3>Choose your game</h3>
+        <h3>Pick your poison</h3>
         <div class="games-picker-grid" id="gamesPickerGrid"></div>
         <button class="btn-secondary" id="closePicker">Cancel</button>
       </div>
@@ -81,9 +94,14 @@
       </div>
       <p class="game-question">Which one do you want to <strong>eliminate</strong>?</p>
       <div class="options-row">
-        <button class="option-btn" id="optionA"></button>
-        <button class="option-btn" id="optionB"></button>
+        <button class="option-btn" id="optionA" data-key="1"></button>
+        <button class="option-btn" id="optionB" data-key="2"></button>
       </div>
+      <div class="game-actions">
+        <button id="undoElimBtn" class="btn-ghost" title="Undo last elimination">↩ Undo</button>
+        <button id="skipElimBtn" class="btn-ghost" title="Can't decide? Get new options">↻ Skip</button>
+      </div>
+      <p class="keyboard-hint">Press 1 or 2</p>
     </main>
 
     <!-- Keeper game -->
@@ -94,9 +112,11 @@
       </div>
       <p class="game-question">Which one do you want to <strong>keep</strong>?</p>
       <div class="options-row">
-        <button class="option-btn keeper-btn" id="keeperA"></button>
-        <button class="option-btn keeper-btn" id="keeperB"></button>
+        <button class="option-btn keeper-btn" id="keeperA" data-key="1"></button>
+        <button class="option-btn keeper-btn" id="keeperB" data-key="2"></button>
       </div>
+      <button id="skipKeeperBtn" class="btn-ghost">↻ Skip (new pair)</button>
+      <p class="keyboard-hint">Press 1 or 2</p>
     </main>
 
     <!-- Spin Wheel game -->
@@ -180,9 +200,9 @@
       <div class="game-header">
         <span class="game-badge">🙈 Blind Decision</span>
       </div>
-      <p class="game-question">Commit first. Reveal after. No backing out!</p>
+      <p class="game-question">Commit first. Reveal after. No backsies.</p>
       <div id="blindDecisionCommit" class="blind-decision-box">
-        <p>I commit to doing whatever is chosen.</p>
+        <p>I promise to do whatever gets chosen. No excuses. No "actually I meant—"</p>
         <button id="blindDecisionCommitBtn" class="btn-primary">I commit — reveal my fate</button>
       </div>
       <div id="blindDecisionResult" class="blind-decision-result hidden">
@@ -223,7 +243,7 @@
     <main id="view-quests" class="view">
       <header>
         <h2>Weekly Quests</h2>
-        <p>Complete quests to earn XP. Resets every Monday.</p>
+        <p>Earn XP. Annoy the Monster. Resets every Monday.</p>
       </header>
       <section class="quests-section">
         <div id="questsList"></div>
@@ -233,7 +253,8 @@
     <!-- Stats -->
     <main id="view-stats" class="view">
       <header>
-        <h2>Statistics</h2>
+        <h2>Your Stats</h2>
+        <p>The Monster hates numbers. Here are yours.</p>
       </header>
       <section class="stats-section">
         <div class="stat-cards" id="statCards"></div>
@@ -257,12 +278,19 @@
         <h2>Settings</h2>
       </header>
       <section class="settings-section">
-        <div class="setting-row">
-          <label>Theme</label>
-          <select id="themeSelect"></select>
+        <div class="unlockables-section" id="unlockablesSection">
+          <h3>Unlockable themes</h3>
+          <p class="unlockables-hint">Earn XP by deciding. Each level unlocks new themes.</p>
+          <div id="unlockablesList" class="unlockables-list"></div>
         </div>
         <div class="setting-row">
-          <label>Confetti on win</label>
+          <label>Theme</label>
+          <select id="themeSelect">
+            <option value="system">System (auto)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Confetti when I win</label>
           <input type="checkbox" id="confettiToggle" checked>
         </div>
       </section>
